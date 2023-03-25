@@ -178,10 +178,10 @@ static UUID GetCoffUUID(llvm::object::COFFObjectFile &coff_obj) {
 char ObjectFilePECOFF::ID;
 
 void ObjectFilePECOFF::Initialize() {
-  PluginManager::RegisterPlugin(GetPluginNameStatic(),
-                                GetPluginDescriptionStatic(), CreateInstance,
-                                CreateMemoryInstance, GetModuleSpecifications,
-                                SaveCore, DebuggerInitialize);
+  PluginManager::RegisterPlugin(
+      GetPluginNameStatic(), GetPluginDescriptionStatic(), CreateInstance,
+      CreateMemoryInstance, CreateInstanceWithDelegate, GetModuleSpecifications,
+      SaveCore, DebuggerInitialize);
 }
 
 void ObjectFilePECOFF::DebuggerInitialize(Debugger &debugger) {
@@ -247,6 +247,12 @@ ObjectFile *ObjectFilePECOFF::CreateMemoryInstance(
   if (objfile_up.get() && objfile_up->ParseHeader()) {
     return objfile_up.release();
   }
+  return nullptr;
+}
+
+ObjectFile *ObjectFilePECOFF::CreateInstanceWithDelegate(
+    const lldb::ModuleSP &module_sp,
+    const lldb::ObjectFileDelegateSP &delegate_sp) {
   return nullptr;
 }
 

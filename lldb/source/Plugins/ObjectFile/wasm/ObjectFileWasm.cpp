@@ -79,9 +79,11 @@ GetWasmString(llvm::DataExtractor &data, llvm::DataExtractor::Cursor &c) {
 char ObjectFileWasm::ID;
 
 void ObjectFileWasm::Initialize() {
-  PluginManager::RegisterPlugin(GetPluginNameStatic(),
-                                GetPluginDescriptionStatic(), CreateInstance,
-                                CreateMemoryInstance, GetModuleSpecifications);
+  PluginManager::RegisterPlugin(
+      GetPluginNameStatic(), GetPluginDescriptionStatic(), CreateInstance,
+      CreateMemoryInstance,
+      /* ObjectFileCreateInstanceWithDelegate = */ nullptr,
+      GetModuleSpecifications);
 }
 
 void ObjectFileWasm::Terminate() {
@@ -153,6 +155,11 @@ ObjectFile *ObjectFileWasm::CreateMemoryInstance(const ModuleSP &module_sp,
   ArchSpec spec = objfile_up->GetArchitecture();
   if (spec && objfile_up->SetModulesArchitecture(spec))
     return objfile_up.release();
+  return nullptr;
+}
+
+ObjectFile *ObjectFileWasm::CreateInstanceWithDelegate(
+    const ModuleSP &module_sp, const ObjectFileDelegateSP &delegate_sp) {
   return nullptr;
 }
 

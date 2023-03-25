@@ -17,7 +17,7 @@
 class ObjectFileJIT : public lldb_private::ObjectFile {
 public:
   ObjectFileJIT(const lldb::ModuleSP &module_sp,
-                const lldb::ObjectFileJITDelegateSP &delegate_sp);
+                const lldb::ObjectFileDelegateSP &delegate_sp);
 
   ~ObjectFileJIT() override;
 
@@ -40,6 +40,10 @@ public:
   static lldb_private::ObjectFile *CreateMemoryInstance(
       const lldb::ModuleSP &module_sp, lldb::WritableDataBufferSP data_sp,
       const lldb::ProcessSP &process_sp, lldb::addr_t header_addr);
+
+  static lldb_private::ObjectFile *
+  CreateInstanceWithDelegate(const lldb::ModuleSP &module_sp,
+                             const lldb::ObjectFileDelegateSP &delegate_sp);
 
   static size_t GetModuleSpecifications(const lldb_private::FileSpec &file,
                                         lldb::DataBufferSP &data_sp,
@@ -101,7 +105,7 @@ public:
   llvm::StringRef GetPluginName() override { return GetPluginNameStatic(); }
 
 protected:
-  lldb::ObjectFileJITDelegateWP m_delegate_wp;
+  lldb::ObjectFileDelegateWP m_delegate_wp;
 };
 
 #endif // LLDB_SOURCE_PLUGINS_OBJECTFILE_JIT_OBJECTFILEJIT_H

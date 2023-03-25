@@ -108,16 +108,12 @@ bool FunctionCaller::WriteFunctionWrapper(
   }
 
   if (m_parser->GetGenerateDebugInfo()) {
-    lldb::ModuleSP jit_module_sp(m_execution_unit_sp->GetJITModule());
-
-    if (jit_module_sp) {
-      ConstString const_func_name(FunctionName());
-      FileSpec jit_file;
-      jit_file.SetFilename(const_func_name);
-      jit_module_sp->SetFileSpecAndObjectName(jit_file, ConstString());
+    ConstString const_func_name(FunctionName());
+    FileSpec jit_file;
+    jit_file.SetFilename(const_func_name);
+    if (auto jit_module_sp = m_execution_unit_sp->CreateJITModule(jit_file)) {
       m_jit_module_wp = jit_module_sp;
-      process->GetTarget().GetImages().Append(jit_module_sp,
-                                              true /* notify */);
+      process->GetTarget().GetImages().Append(jit_module_sp);
     }
   }
   if (process && m_jit_start_addr)

@@ -815,7 +815,8 @@ char ObjectFileMachO::ID;
 void ObjectFileMachO::Initialize() {
   PluginManager::RegisterPlugin(
       GetPluginNameStatic(), GetPluginDescriptionStatic(), CreateInstance,
-      CreateMemoryInstance, GetModuleSpecifications, SaveCore);
+      CreateMemoryInstance, CreateInstanceWithDelegate, GetModuleSpecifications,
+      SaveCore);
 }
 
 void ObjectFileMachO::Terminate() {
@@ -862,6 +863,12 @@ ObjectFile *ObjectFileMachO::CreateMemoryInstance(
     if (objfile_up.get() && objfile_up->ParseHeader())
       return objfile_up.release();
   }
+  return nullptr;
+}
+
+ObjectFile *ObjectFileMachO::CreateInstanceWithDelegate(
+    const lldb::ModuleSP &module_sp,
+    const lldb::ObjectFileDelegateSP &delegate_sp) {
   return nullptr;
 }
 

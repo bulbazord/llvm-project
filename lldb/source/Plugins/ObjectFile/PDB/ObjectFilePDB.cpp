@@ -37,9 +37,10 @@ static UUID GetPDBUUID(InfoStream &IS) {
 char ObjectFilePDB::ID;
 
 void ObjectFilePDB::Initialize() {
-  PluginManager::RegisterPlugin(GetPluginNameStatic(),
-                                GetPluginDescriptionStatic(), CreateInstance,
-                                CreateMemoryInstance, GetModuleSpecifications);
+  PluginManager::RegisterPlugin(
+      GetPluginNameStatic(), GetPluginDescriptionStatic(), CreateInstance,
+      CreateMemoryInstance, CreateInstanceWithDelegate,
+      GetModuleSpecifications);
 }
 
 void ObjectFilePDB::Terminate() {
@@ -101,6 +102,11 @@ ObjectFile *ObjectFilePDB::CreateMemoryInstance(const ModuleSP &module_sp,
                                                 WritableDataBufferSP data_sp,
                                                 const ProcessSP &process_sp,
                                                 addr_t header_addr) {
+  return nullptr;
+}
+
+ObjectFile *ObjectFilePDB::CreateInstanceWithDelegate(
+    const ModuleSP &module_sp, const ObjectFileDelegateSP &delegate_sp) {
   return nullptr;
 }
 

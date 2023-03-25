@@ -25,11 +25,11 @@
 
 namespace lldb_private {
 
-class ObjectFileJITDelegate {
+class ObjectFileDelegate {
 public:
-  ObjectFileJITDelegate() = default;
+  ObjectFileDelegate() = default;
 
-  virtual ~ObjectFileJITDelegate() = default;
+  virtual ~ObjectFileDelegate() = default;
 
   virtual lldb::ByteOrder GetByteOrder() const = 0;
 
@@ -184,6 +184,21 @@ public:
                                        const lldb::ProcessSP &process_sp,
                                        lldb::addr_t header_addr,
                                        lldb::WritableDataBufferSP file_data_sp);
+
+  /// Find an ObjectFile plugin that can be backed by a delegate.
+  ///
+  /// Scans all loaded plugin interfaces that implement versions of the
+  /// ObjectFile plugin interface and returns the first instance that can be
+  /// backed by the given delegate.
+  ///
+  /// \param[in] module_sp
+  ///     The parent module that owns this object file.
+  ///
+  /// \param[in] delegate_sp
+  ///     The delegate that will back the object file.
+  static lldb::ObjectFileSP
+  FindPlugin(const lldb::ModuleSP &module_sp,
+             const lldb::ObjectFileDelegateSP &delegate_sp);
 
   static size_t
   GetModuleSpecifications(const FileSpec &file, lldb::offset_t file_offset,

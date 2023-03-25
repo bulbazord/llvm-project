@@ -184,6 +184,28 @@ ObjectFileSP ObjectFile::FindPlugin(const lldb::ModuleSP &module_sp,
   return object_file_sp;
 }
 
+ObjectFileSP
+ObjectFile::FindPlugin(const lldb::ModuleSP &module_sp,
+                       const lldb::ObjectFileDelegateSP &delegate_sp) {
+  if (!module_sp)
+    return ObjectFileSP();
+
+  ObjectFileSP object_file_sp;
+  ObjectFileCreateInstanceWithDelegate create_callback;
+  for (uint32_t idx = 0;
+       (create_callback =
+            PluginManager::GetObjectFileCreateWithDelegateCallbackAtIndex(
+                idx)) != nullptr;
+       idx++) {
+    object_file_sp.reset(create_callback(module_sp, delegate_sp));
+    if (object_file_sp)
+      return object_file_sp;
+  }
+
+  object_file_sp.reset();
+  return object_file_sp;
+}
+
 size_t ObjectFile::GetModuleSpecifications(const FileSpec &file,
                                            lldb::offset_t file_offset,
                                            lldb::offset_t file_size,

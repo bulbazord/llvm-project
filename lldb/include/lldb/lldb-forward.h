@@ -130,7 +130,7 @@ class ModuleSpec;
 class ModuleSpecList;
 class ObjectContainer;
 class ObjectFile;
-class ObjectFileJITDelegate;
+class ObjectFileDelegate;
 class OperatingSystem;
 class OptionGroup;
 class OptionGroupOptions;
@@ -355,10 +355,10 @@ typedef std::shared_ptr<lldb_private::Module> ModuleSP;
 typedef std::weak_ptr<lldb_private::Module> ModuleWP;
 typedef std::shared_ptr<lldb_private::ObjectFile> ObjectFileSP;
 typedef std::shared_ptr<lldb_private::ObjectContainer> ObjectContainerSP;
-typedef std::shared_ptr<lldb_private::ObjectFileJITDelegate>
-    ObjectFileJITDelegateSP;
-typedef std::weak_ptr<lldb_private::ObjectFileJITDelegate>
-    ObjectFileJITDelegateWP;
+typedef std::shared_ptr<lldb_private::ObjectFileDelegate>
+    ObjectFileDelegateSP;
+typedef std::weak_ptr<lldb_private::ObjectFileDelegate>
+    ObjectFileDelegateWP;
 typedef std::unique_ptr<lldb_private::OperatingSystem> OperatingSystemUP;
 typedef std::shared_ptr<lldb_private::OptionValue> OptionValueSP;
 typedef std::weak_ptr<lldb_private::OptionValue> OptionValueWP;

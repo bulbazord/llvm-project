@@ -340,6 +340,21 @@ ObjectFile *Module::GetMemoryObjectFile(const lldb::ProcessSP &process_sp,
   return m_objfile_sp.get();
 }
 
+ObjectFile *Module::GetObjectFileWithDelegate(
+    const lldb::ObjectFileDelegateSP &delegate_sp) {
+  if (m_objfile_sp)
+    return m_objfile_sp.get();
+
+  {
+    std::lock_guard<std::recursive_mutex> guard(m_mutex);
+    m_did_load_objfile.store(true, std::memory_order_relaxed);
+    m_objfile_sp = ObjectFile::FindPlugin(shared_from_this(), delegate_sp);
+    if (m_objfile_sp)
+      m_arch = m_objfile_sp->GetArchitecture();
+  }
+  return m_objfile_sp.get();
+}
+
 const lldb_private::UUID &Module::GetUUID() {
   if (!m_did_set_uuid.load()) {
     std::lock_guard<std::recursive_mutex> guard(m_mutex);

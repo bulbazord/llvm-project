@@ -44,9 +44,10 @@ LLDB_PLUGIN_DEFINE(ObjectFileJIT)
 char ObjectFileJIT::ID;
 
 void ObjectFileJIT::Initialize() {
-  PluginManager::RegisterPlugin(GetPluginNameStatic(),
-                                GetPluginDescriptionStatic(), CreateInstance,
-                                CreateMemoryInstance, GetModuleSpecifications);
+  PluginManager::RegisterPlugin(
+      GetPluginNameStatic(), GetPluginDescriptionStatic(), CreateInstance,
+      CreateMemoryInstance, CreateInstanceWithDelegate,
+      GetModuleSpecifications);
 }
 
 void ObjectFileJIT::Terminate() {
@@ -59,7 +60,7 @@ ObjectFile *ObjectFileJIT::CreateInstance(const lldb::ModuleSP &module_sp,
                                           const FileSpec *file,
                                           lldb::offset_t file_offset,
                                           lldb::offset_t length) {
-  // JIT'ed object file is backed by the ObjectFileJITDelegate, never read from
+  // JIT'ed object file is backed by the ObjectFileDelegate, never read from
   // a file
   return nullptr;
 }
@@ -68,9 +69,22 @@ ObjectFile *ObjectFileJIT::CreateMemoryInstance(const lldb::ModuleSP &module_sp,
                                                 WritableDataBufferSP data_sp,
                                                 const ProcessSP &process_sp,
                                                 lldb::addr_t header_addr) {
-  // JIT'ed object file is backed by the ObjectFileJITDelegate, never read from
+  // JIT'ed object file is backed by the ObjectFileDelegate, never read from
   // memory
   return nullptr;
+}
+
+ObjectFile *ObjectFileJIT::CreateInstanceWithDelegate(
+    const lldb::ModuleSP &module_sp,
+    const lldb::ObjectFileDelegateSP &delegate_sp) {
+  if (!module_sp || !delegate_sp)
+    return nullptr;
+
+  auto objfile_jit_up = std::make_unique<ObjectFileJIT>(module_sp, delegate_sp);
+  if (!objfile_jit_up)
+    return nullptr;
+
+  return objfile_jit_up.release();
 }
 
 size_t ObjectFileJIT::GetModuleSpecifications(
@@ -82,7 +96,7 @@ size_t ObjectFileJIT::GetModuleSpecifications(
 }
 
 ObjectFileJIT::ObjectFileJIT(const lldb::ModuleSP &module_sp,
-                             const ObjectFileJITDelegateSP &delegate_sp)
+                             const ObjectFileDelegateSP &delegate_sp)
     : ObjectFile(module_sp, nullptr, 0, 0, DataBufferSP(), 0), m_delegate_wp() {
   if (delegate_sp) {
     m_delegate_wp = delegate_sp;
@@ -107,7 +121,7 @@ uint32_t ObjectFileJIT::GetAddressByteSize() const {
 }
 
 void ObjectFileJIT::ParseSymtab(Symtab &symtab) {
-  ObjectFileJITDelegateSP delegate_sp(m_delegate_wp.lock());
+  ObjectFileDelegateSP delegate_sp(m_delegate_wp.lock());
   if (delegate_sp)
     delegate_sp->PopulateSymtab(this, symtab);
 }
@@ -119,7 +133,7 @@ bool ObjectFileJIT::IsStripped() {
 void ObjectFileJIT::CreateSections(SectionList &unified_section_list) {
   if (!m_sections_up) {
     m_sections_up = std::make_unique<SectionList>();
-    ObjectFileJITDelegateSP delegate_sp(m_delegate_wp.lock());
+    ObjectFileDelegateSP delegate_sp(m_delegate_wp.lock());
     if (delegate_sp) {
       delegate_sp->PopulateSectionList(this, *m_sections_up);
       unified_section_list = *m_sections_up;
@@ -173,7 +187,7 @@ ObjectFile::Type ObjectFileJIT::CalculateType() { return eTypeJIT; }
 ObjectFile::Strata ObjectFileJIT::CalculateStrata() { return eStrataJIT; }
 
 ArchSpec ObjectFileJIT::GetArchitecture() {
-  if (ObjectFileJITDelegateSP delegate_sp = m_delegate_wp.lock())
+  if (ObjectFileDelegateSP delegate_sp = m_delegate_wp.lock())
     return delegate_sp->GetArchitecture();
   return ArchSpec();
 }

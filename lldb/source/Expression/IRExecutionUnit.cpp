@@ -36,7 +36,6 @@
 #include "lldb/Utility/LLDBLog.h"
 #include "lldb/Utility/Log.h"
 
-#include "lldb/../../source/Plugins/ObjectFile/JIT/ObjectFileJIT.h"
 #include <optional>
 
 using namespace lldb_private;
@@ -1185,21 +1184,28 @@ ArchSpec IRExecutionUnit::GetArchitecture() {
   return ArchSpec();
 }
 
-lldb::ModuleSP IRExecutionUnit::GetJITModule() {
+lldb::ModuleSP IRExecutionUnit::CreateJITModule(const FileSpec &file_spec) {
   ExecutionContext exe_ctx(GetBestExecutionContextScope());
   Target *target = exe_ctx.GetTargetPtr();
   if (!target)
-    return nullptr;
+    return lldb::ModuleSP();
 
-  auto Delegate = std::static_pointer_cast<lldb_private::ObjectFileJITDelegate>(
-      shared_from_this());
+  // If we are unable to get the architecture, we consider the creation a
+  // failure.
+  auto arch = GetArchitecture();
+  if (!arch)
+    return lldb::ModuleSP();
 
-  lldb::ModuleSP jit_module_sp =
-      lldb_private::Module::CreateModuleFromObjectFile<ObjectFileJIT>(Delegate);
-  if (!jit_module_sp)
-    return nullptr;
+  auto module_sp = std::make_shared<Module>(file_spec, arch);
+  if (!module_sp)
+    return lldb::ModuleSP();
+
+  auto objfile = module_sp->GetObjectFileWithDelegate(shared_from_this());
+  if (!objfile)
+    return lldb::ModuleSP();
 
   bool changed = false;
-  jit_module_sp->SetLoadAddress(*target, 0, true, changed);
-  return jit_module_sp;
+  module_sp->SetLoadAddress(*target, /*value = */ 0,
+                            /*value_is_offset = */ true, changed);
+  return module_sp;
 }

@@ -169,13 +169,14 @@ public:
   GetSystemRuntimeCreateCallbackAtIndex(uint32_t idx);
 
   // ObjectFile
-  static bool
-  RegisterPlugin(llvm::StringRef name, llvm::StringRef description,
-                 ObjectFileCreateInstance create_callback,
-                 ObjectFileCreateMemoryInstance create_memory_callback,
-                 ObjectFileGetModuleSpecifications get_module_specifications,
-                 ObjectFileSaveCore save_core = nullptr,
-                 DebuggerInitializeCallback debugger_init_callback = nullptr);
+  static bool RegisterPlugin(
+      llvm::StringRef name, llvm::StringRef description,
+      ObjectFileCreateInstance create_callback,
+      ObjectFileCreateMemoryInstance create_memory_callback,
+      ObjectFileCreateInstanceWithDelegate create_with_delegate_callback,
+      ObjectFileGetModuleSpecifications get_module_specifications,
+      ObjectFileSaveCore save_core = nullptr,
+      DebuggerInitializeCallback debugger_init_callback = nullptr);
 
   static bool UnregisterPlugin(ObjectFileCreateInstance create_callback);
 
@@ -190,6 +191,9 @@ public:
 
   static ObjectFileCreateMemoryInstance
   GetObjectFileCreateMemoryCallbackForPluginName(llvm::StringRef name);
+
+  static ObjectFileCreateInstanceWithDelegate
+  GetObjectFileCreateWithDelegateCallbackAtIndex(uint32_t idx);
 
   static Status SaveCore(const lldb::ProcessSP &process_sp,
                          const FileSpec &outfile,

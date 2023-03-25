@@ -21,6 +21,7 @@
 #include "lldb/Symbol/ObjectFile.h"
 #include "lldb/Symbol/SymbolContext.h"
 #include "lldb/Utility/DataBufferHeap.h"
+#include "lldb/Utility/FileSpec.h"
 #include "lldb/lldb-forward.h"
 #include "lldb/lldb-private.h"
 
@@ -55,7 +56,7 @@ class Status;
 /// code into the target process.
 class IRExecutionUnit : public std::enable_shared_from_this<IRExecutionUnit>,
                         public IRMemoryMap,
-                        public ObjectFileJITDelegate {
+                        public ObjectFileDelegate {
 public:
   /// Constructor
   IRExecutionUnit(std::unique_ptr<llvm::LLVMContext> &context_up,
@@ -86,7 +87,7 @@ public:
 
   void FreeNow(lldb::addr_t allocation);
 
-  /// ObjectFileJITDelegate overrides
+  /// ObjectFileDelegate overrides
   lldb::ByteOrder GetByteOrder() const override;
 
   uint32_t GetAddressByteSize() const override;
@@ -99,7 +100,7 @@ public:
 
   ArchSpec GetArchitecture() override;
 
-  lldb::ModuleSP GetJITModule();
+  lldb::ModuleSP CreateJITModule(const FileSpec &file_spec);
 
   lldb::addr_t FindSymbol(ConstString name, bool &missing_weak);
 

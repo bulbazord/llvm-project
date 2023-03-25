@@ -48,9 +48,10 @@ std::optional<Header> Header::parse(llvm::StringRef text) {
 char ObjectFileBreakpad::ID;
 
 void ObjectFileBreakpad::Initialize() {
-  PluginManager::RegisterPlugin(GetPluginNameStatic(),
-                                GetPluginDescriptionStatic(), CreateInstance,
-                                CreateMemoryInstance, GetModuleSpecifications);
+  PluginManager::RegisterPlugin(
+      GetPluginNameStatic(), GetPluginDescriptionStatic(), CreateInstance,
+      CreateMemoryInstance, CreateInstanceWithDelegate,
+      GetModuleSpecifications);
 }
 
 void ObjectFileBreakpad::Terminate() {
@@ -87,6 +88,12 @@ ObjectFile *ObjectFileBreakpad::CreateInstance(
 ObjectFile *ObjectFileBreakpad::CreateMemoryInstance(
     const ModuleSP &module_sp, WritableDataBufferSP data_sp,
     const ProcessSP &process_sp, addr_t header_addr) {
+  return nullptr;
+}
+
+ObjectFile *ObjectFileBreakpad::CreateInstanceWithDelegate(
+    const lldb::ModuleSP &module_sp,
+    const lldb::ObjectFileDelegateSP &delegate_sp) {
   return nullptr;
 }
 

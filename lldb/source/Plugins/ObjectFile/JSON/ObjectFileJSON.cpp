@@ -26,9 +26,10 @@ LLDB_PLUGIN_DEFINE(ObjectFileJSON)
 char ObjectFileJSON::ID;
 
 void ObjectFileJSON::Initialize() {
-  PluginManager::RegisterPlugin(GetPluginNameStatic(),
-                                GetPluginDescriptionStatic(), CreateInstance,
-                                CreateMemoryInstance, GetModuleSpecifications);
+  PluginManager::RegisterPlugin(
+      GetPluginNameStatic(), GetPluginDescriptionStatic(), CreateInstance,
+      CreateMemoryInstance, CreateInstanceWithDelegate,
+      GetModuleSpecifications);
 }
 
 void ObjectFileJSON::Terminate() {
@@ -86,6 +87,12 @@ ObjectFile *ObjectFileJSON::CreateMemoryInstance(const ModuleSP &module_sp,
                                                  WritableDataBufferSP data_sp,
                                                  const ProcessSP &process_sp,
                                                  addr_t header_addr) {
+  return nullptr;
+}
+
+ObjectFile *ObjectFileJSON::CreateInstanceWithDelegate(
+    const lldb::ModuleSP &module_sp,
+    const lldb::ObjectFileDelegateSP &delegate_sp) {
   return nullptr;
 }
 

@@ -25,7 +25,8 @@ LLDB_PLUGIN_DEFINE(ObjectFileMinidump)
 void ObjectFileMinidump::Initialize() {
   PluginManager::RegisterPlugin(
       GetPluginNameStatic(), GetPluginDescriptionStatic(), CreateInstance,
-      CreateMemoryInstance, GetModuleSpecifications, SaveCore);
+      CreateMemoryInstance, CreateInstanceWithDelegate, GetModuleSpecifications,
+      SaveCore);
 }
 
 void ObjectFileMinidump::Terminate() {
@@ -42,6 +43,12 @@ ObjectFile *ObjectFileMinidump::CreateInstance(
 ObjectFile *ObjectFileMinidump::CreateMemoryInstance(
     const lldb::ModuleSP &module_sp, WritableDataBufferSP data_sp,
     const ProcessSP &process_sp, lldb::addr_t header_addr) {
+  return nullptr;
+}
+
+ObjectFile *ObjectFileMinidump::CreateInstanceWithDelegate(
+    const lldb::ModuleSP &module_sp,
+    const lldb::ObjectFileDelegateSP &delegate_sp) {
   return nullptr;
 }
 

@@ -77,6 +77,10 @@ public:
       const lldb::ModuleSP &module_sp, lldb::WritableDataBufferSP data_sp,
       const lldb::ProcessSP &process_sp, lldb::addr_t header_addr);
 
+  static lldb_private::ObjectFile *
+  CreateInstanceWithDelegate(const lldb::ModuleSP &module_sp,
+                             const lldb::ObjectFileDelegateSP &delegate_sp);
+
   static size_t GetModuleSpecifications(const lldb_private::FileSpec &file,
                                         lldb::DataBufferSP &data_sp,
                                         lldb::offset_t data_offset,

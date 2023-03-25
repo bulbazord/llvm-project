@@ -642,6 +642,17 @@ public:
                                   lldb::addr_t header_addr, Status &error,
                                   size_t size_to_read = 512);
 
+  /// Load an object file backed by an ObjectFileDelegate
+  ///
+  /// If the object file has not been created yet, this function
+  /// will find the best ObjectFile plugin with the given delegate.
+  ///
+  /// \return
+  ///     The object file backed by the delegate or nullptr if the operation
+  ///     failed.
+  ObjectFile *
+  GetObjectFileWithDelegate(const lldb::ObjectFileDelegateSP &delegate_sp);
+
   /// Get the module's symbol file
   ///
   /// If the symbol file has already been loaded, this function returns it. All

@@ -620,16 +620,19 @@ struct ObjectFileInstance : public PluginInstance<ObjectFileCreateInstance> {
       llvm::StringRef name, llvm::StringRef description,
       CallbackType create_callback,
       ObjectFileCreateMemoryInstance create_memory_callback,
+      ObjectFileCreateInstanceWithDelegate create_delegate_callback,
       ObjectFileGetModuleSpecifications get_module_specifications,
       ObjectFileSaveCore save_core,
       DebuggerInitializeCallback debugger_init_callback)
       : PluginInstance<ObjectFileCreateInstance>(
             name, description, create_callback, debugger_init_callback),
         create_memory_callback(create_memory_callback),
+        create_delegate_callback(create_delegate_callback),
         get_module_specifications(get_module_specifications),
         save_core(save_core) {}
 
   ObjectFileCreateMemoryInstance create_memory_callback;
+  ObjectFileCreateInstanceWithDelegate create_delegate_callback;
   ObjectFileGetModuleSpecifications get_module_specifications;
   ObjectFileSaveCore save_core;
 };
@@ -644,12 +647,14 @@ bool PluginManager::RegisterPlugin(
     llvm::StringRef name, llvm::StringRef description,
     ObjectFileCreateInstance create_callback,
     ObjectFileCreateMemoryInstance create_memory_callback,
+    ObjectFileCreateInstanceWithDelegate create_delegate_callback,
     ObjectFileGetModuleSpecifications get_module_specifications,
     ObjectFileSaveCore save_core,
     DebuggerInitializeCallback debugger_init_callback) {
   return GetObjectFileInstances().RegisterPlugin(
       name, description, create_callback, create_memory_callback,
-      get_module_specifications, save_core, debugger_init_callback);
+      create_delegate_callback, get_module_specifications, save_core,
+      debugger_init_callback);
 }
 
 bool PluginManager::UnregisterPlugin(ObjectFileCreateInstance create_callback) {
@@ -686,6 +691,14 @@ PluginManager::GetObjectFileCreateMemoryCallbackForPluginName(
     if (instance.name == name)
       return instance.create_memory_callback;
   }
+  return nullptr;
+}
+
+ObjectFileCreateInstanceWithDelegate
+PluginManager::GetObjectFileCreateWithDelegateCallbackAtIndex(uint32_t idx) {
+  const auto &instances = GetObjectFileInstances().GetInstances();
+  if (idx < instances.size())
+    return instances[idx].create_delegate_callback;
   return nullptr;
 }
 

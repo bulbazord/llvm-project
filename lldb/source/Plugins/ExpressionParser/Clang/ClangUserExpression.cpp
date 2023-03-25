@@ -748,13 +748,11 @@ bool ClangUserExpression::Parse(DiagnosticManager &diagnostic_manager,
   }
 
   if (generate_debug_info) {
-    lldb::ModuleSP jit_module_sp(m_execution_unit_sp->GetJITModule());
+    ConstString const_func_name(FunctionName());
+    FileSpec jit_file;
+    jit_file.SetFilename(const_func_name);
 
-    if (jit_module_sp) {
-      ConstString const_func_name(FunctionName());
-      FileSpec jit_file;
-      jit_file.SetFilename(const_func_name);
-      jit_module_sp->SetFileSpecAndObjectName(jit_file, ConstString());
+    if (auto jit_module_sp = m_execution_unit_sp->CreateJITModule(jit_file)) {
       m_jit_module_wp = jit_module_sp;
       target->GetImages().Append(jit_module_sp);
     }

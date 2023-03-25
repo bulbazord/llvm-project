@@ -56,6 +56,9 @@ typedef ObjectFile *(*ObjectFileCreateInstance)(const lldb::ModuleSP &module_sp,
 typedef ObjectFile *(*ObjectFileCreateMemoryInstance)(
     const lldb::ModuleSP &module_sp, lldb::WritableDataBufferSP data_sp,
     const lldb::ProcessSP &process_sp, lldb::addr_t offset);
+typedef ObjectFile *(*ObjectFileCreateInstanceWithDelegate)(
+    const lldb::ModuleSP &module_sp,
+    const lldb::ObjectFileDelegateSP &delegate_sp);
 typedef bool (*ObjectFileSaveCore)(const lldb::ProcessSP &process_sp,
                                    const FileSpec &outfile,
                                    lldb::SaveCoreStyle &core_style,

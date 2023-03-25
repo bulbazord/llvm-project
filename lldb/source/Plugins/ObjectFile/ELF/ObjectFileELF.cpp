@@ -353,9 +353,10 @@ const uint32_t ObjectFileELF::g_core_uuid_magic(0xE210C);
 
 // Static methods.
 void ObjectFileELF::Initialize() {
-  PluginManager::RegisterPlugin(GetPluginNameStatic(),
-                                GetPluginDescriptionStatic(), CreateInstance,
-                                CreateMemoryInstance, GetModuleSpecifications);
+  PluginManager::RegisterPlugin(
+      GetPluginNameStatic(), GetPluginDescriptionStatic(), CreateInstance,
+      CreateMemoryInstance, CreateInstanceWithDelegate,
+      GetModuleSpecifications);
 }
 
 void ObjectFileELF::Terminate() {
@@ -432,6 +433,12 @@ ObjectFile *ObjectFileELF::CreateMemoryInstance(
       }
     }
   }
+  return nullptr;
+}
+
+ObjectFile *ObjectFileELF::CreateInstanceWithDelegate(
+    const lldb::ModuleSP &module_sp,
+    const lldb::ObjectFileDelegateSP &delegate_sp) {
   return nullptr;
 }
 
