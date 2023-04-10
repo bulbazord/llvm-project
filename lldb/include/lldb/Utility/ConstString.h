@@ -411,6 +411,8 @@ public:
 
   static MemoryStats GetMemoryStats();
 
+  static void DumpAllStrings();
+
 protected:
   template <typename T, typename Enable> friend struct ::llvm::DenseMapInfo;
   /// Only used by DenseMapInfo.

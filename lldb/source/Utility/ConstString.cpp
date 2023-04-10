@@ -14,9 +14,11 @@
 #include "llvm/ADT/iterator.h"
 #include "llvm/Support/Allocator.h"
 #include "llvm/Support/DJB.h"
+#include "llvm/Support/FileSystem.h"
 #include "llvm/Support/FormatProviders.h"
 #include "llvm/Support/RWMutex.h"
 #include "llvm/Support/Threading.h"
+#include "llvm/Support/raw_ostream.h"
 
 #include <array>
 #include <utility>
@@ -168,6 +170,18 @@ public:
       stats.bytes_used += alloc.getBytesAllocated();
     }
     return stats;
+  }
+
+  void DumpAllStrings() const {
+    std::error_code ec;
+    llvm::raw_fd_ostream stream("/Users/alex/strings.txt", ec, llvm::sys::fs::OF_None);
+    if (ec)
+      return;
+    for (const auto &pool : m_string_pools) {
+      llvm::sys::SmartScopedReader<false> rlock(pool.m_mutex);
+      for (const auto &str_map_entry : pool.m_string_map)
+        stream << str_map_entry.getKeyData() << '\n';
+    }
   }
 
 protected:
@@ -334,4 +348,8 @@ void llvm::format_provider<ConstString>::format(const ConstString &CS,
                                                 llvm::raw_ostream &OS,
                                                 llvm::StringRef Options) {
   format_provider<StringRef>::format(CS.GetStringRef(), OS, Options);
+}
+
+void ConstString::DumpAllStrings() {
+  StringPool().DumpAllStrings();
 }
