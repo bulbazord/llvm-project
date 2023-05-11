@@ -9,6 +9,7 @@
 #include "lldb/API/SBStructuredData.h"
 #include "lldb/Utility/Instrumentation.h"
 
+#include "lldb/API/SBOptional.h"
 #include "lldb/API/SBStream.h"
 #include "lldb/API/SBStringList.h"
 #include "lldb/Core/StructuredDataImpl.h"
@@ -166,6 +167,13 @@ uint64_t SBStructuredData::GetIntegerValue(uint64_t fail_value) const {
   LLDB_INSTRUMENT_VA(this, fail_value);
 
   return m_impl_up->GetIntegerValue(fail_value);
+}
+
+SBOptional<uint64_t> SBStructuredData::MaybeGetInteger() const {
+  uint64_t ret = m_impl_up->GetIntegerValue(0);
+  if (ret == 0)
+    return SBNil;
+  return ret;
 }
 
 double SBStructuredData::GetFloatValue(double fail_value) const {

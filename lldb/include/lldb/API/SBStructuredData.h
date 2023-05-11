@@ -11,6 +11,7 @@
 
 #include "lldb/API/SBDefines.h"
 #include "lldb/API/SBModule.h"
+#include "lldb/API/SBOptional.h"
 
 namespace lldb_private {
 namespace python {
@@ -66,6 +67,8 @@ public:
 
   /// Return the integer value if this data structure is an integer type.
   uint64_t GetIntegerValue(uint64_t fail_value = 0) const;
+
+  SBOptional<uint64_t> MaybeGetInteger() const;
 
   /// Return the floating point value if this data structure is a floating
   /// type.

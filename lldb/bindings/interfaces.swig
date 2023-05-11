@@ -118,6 +118,7 @@
 %include "lldb/API/SBMemoryRegionInfoList.h"
 %include "lldb/API/SBModule.h"
 %include "lldb/API/SBModuleSpec.h"
+%include "lldb/API/SBOptional.h"
 %include "lldb/API/SBPlatform.h"
 %include "lldb/API/SBProcess.h"
 %include "lldb/API/SBProcessInfo.h"
