@@ -389,7 +389,7 @@ void SymbolFileOnDemand::FindFunctions(
     const Module::LookupInfo &lookup_info,
     const CompilerDeclContext &parent_decl_ctx, bool include_inlines,
     SymbolContextList &sc_list) {
-  ConstString name = lookup_info.GetLookupName();
+  llvm::StringRef name = lookup_info.GetLookupName();
   FunctionNameType name_type_mask = lookup_info.GetNameTypeMask();
   if (!m_debug_info_enabled) {
     Log *log = GetLog();
@@ -402,7 +402,8 @@ void SymbolFileOnDemand::FindFunctions(
     }
 
     SymbolContextList sc_list_helper;
-    symtab->FindFunctionSymbols(name, name_type_mask, sc_list_helper);
+    symtab->FindFunctionSymbols(ConstString(name), name_type_mask,
+                                sc_list_helper);
     if (sc_list_helper.GetSize() == 0) {
       LLDB_LOG(log, "[{0}] {1}({2}) is skipped - fail to find match in symtab",
                GetSymbolFileName(), __FUNCTION__, name);

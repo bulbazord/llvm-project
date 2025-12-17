@@ -910,7 +910,7 @@ public:
     LookupInfo() = default;
 
     /// Copies an existing LookupInfo with a different lookup name.
-    LookupInfo(const LookupInfo &lookup_info, ConstString lookup_name);
+    LookupInfo(const LookupInfo &lookup_info, llvm::StringRef lookup_name);
 
     /// Creates a vector of lookup infos for function name resolution.
     ///
@@ -938,13 +938,13 @@ public:
     /// \return
     ///     A vector of LookupInfo objects, one per relevant language.
     static std::vector<LookupInfo>
-    MakeLookupInfos(ConstString name, lldb::FunctionNameType name_type_mask,
+    MakeLookupInfos(llvm::StringRef name, lldb::FunctionNameType name_type_mask,
                     lldb::LanguageType lang_type,
-                    ConstString lookup_name_override = {});
+                    llvm::StringRef lookup_name_override = {});
 
-    ConstString GetName() const { return m_name; }
+    llvm::StringRef GetName() const { return m_name; }
 
-    ConstString GetLookupName() const { return m_lookup_name; }
+    llvm::StringRef GetLookupName() const { return m_lookup_name; }
 
     lldb::FunctionNameType GetNameTypeMask() const { return m_name_type_mask; }
 
@@ -958,10 +958,10 @@ public:
 
   protected:
     /// What the user originally typed
-    ConstString m_name;
+    std::string m_name;
 
     /// The actual name will lookup when calling in the object or symbol file
-    ConstString m_lookup_name;
+    std::string m_lookup_name;
 
     /// Limit matches to only be for this language
     lldb::LanguageType m_language = lldb::eLanguageTypeUnknown;
@@ -975,7 +975,7 @@ public:
     bool m_match_name_after_lookup = false;
 
   private:
-    LookupInfo(ConstString name, ConstString lookup_name,
+    LookupInfo(llvm::StringRef name, llvm::StringRef lookup_name,
                lldb::FunctionNameType name_type_mask,
                lldb::LanguageType lang_type);
   };

@@ -490,7 +490,7 @@ void ModuleList::FindFunctionSymbols(ConstString name,
     for (const auto &lookup_info : lookup_infos) {
       const size_t old_size = sc_list.GetSize();
       for (const ModuleSP &module_sp : m_modules) {
-        module_sp->FindFunctionSymbols(lookup_info.GetLookupName(),
+        module_sp->FindFunctionSymbols(ConstString(lookup_info.GetLookupName()),
                                        lookup_info.GetNameTypeMask(), sc_list);
       }
 

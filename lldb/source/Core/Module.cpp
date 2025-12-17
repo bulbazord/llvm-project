@@ -642,21 +642,21 @@ void Module::FindCompileUnits(const FileSpec &path,
 }
 
 Module::LookupInfo::LookupInfo(const LookupInfo &lookup_info,
-                               ConstString lookup_name)
-    : m_name(lookup_info.GetName()), m_lookup_name(lookup_name),
+                               llvm::StringRef lookup_name)
+    : m_name(lookup_info.GetName()), m_lookup_name(lookup_name.str()),
       m_language(lookup_info.GetLanguageType()),
       m_name_type_mask(lookup_info.GetNameTypeMask()) {}
 
-Module::LookupInfo::LookupInfo(ConstString name, ConstString lookup_name,
+Module::LookupInfo::LookupInfo(llvm::StringRef name, llvm::StringRef lookup_name,
                                FunctionNameType name_type_mask,
                                LanguageType lang_type)
-    : m_name(name), m_lookup_name(lookup_name), m_language(lang_type) {
+    : m_name(name.str()), m_lookup_name(lookup_name.str()), m_language(lang_type) {
   std::optional<ConstString> basename;
   Language *lang = Language::FindPlugin(lang_type);
 
   if (name_type_mask & eFunctionNameTypeAuto) {
     if (lang) {
-      auto info = lang->GetFunctionNameInfo(name);
+      auto info = lang->GetFunctionNameInfo(ConstString(name));
       if (info.first != eFunctionNameTypeNone) {
         m_name_type_mask |= info.first;
         if (!basename && info.second)
@@ -673,7 +673,7 @@ Module::LookupInfo::LookupInfo(ConstString name, ConstString lookup_name,
   } else {
     m_name_type_mask = name_type_mask;
     if (lang) {
-      auto info = lang->GetFunctionNameInfo(name);
+      auto info = lang->GetFunctionNameInfo(ConstString(name));
       if (info.first & m_name_type_mask) {
         // If the user asked for FunctionNameTypes that aren't possible,
         // then filter those out. (e.g. asking for Selectors on
@@ -697,14 +697,14 @@ Module::LookupInfo::LookupInfo(ConstString name, ConstString lookup_name,
     // a lookup on the basename "count" and then make sure any matching results
     // contain "a::count" so that it would match "b::a::count" and "a::count".
     // This is why we set match_name_after_lookup to true.
-    m_lookup_name.SetString(*basename);
+    m_lookup_name = basename->GetCString();
     m_match_name_after_lookup = true;
   }
 }
 
 std::vector<Module::LookupInfo> Module::LookupInfo::MakeLookupInfos(
-    ConstString name, lldb::FunctionNameType name_type_mask,
-    lldb::LanguageType lang_type, ConstString lookup_name_override) {
+    llvm::StringRef name, lldb::FunctionNameType name_type_mask,
+    lldb::LanguageType lang_type, llvm::StringRef lookup_name_override) {
   std::vector<LanguageType> lang_types;
   if (lang_type != eLanguageTypeUnknown) {
     lang_types.push_back(lang_type);
@@ -722,7 +722,8 @@ std::vector<Module::LookupInfo> Module::LookupInfo::MakeLookupInfos(
       lang_types = {eLanguageTypeObjC, eLanguageTypeC_plus_plus};
   }
 
-  ConstString lookup_name = lookup_name_override ? lookup_name_override : name;
+  llvm::StringRef lookup_name =
+      lookup_name_override.empty() ? lookup_name_override : name;
 
   std::vector<Module::LookupInfo> infos;
   infos.reserve(lang_types.size());
@@ -740,7 +741,7 @@ bool Module::LookupInfo::NameMatchesLookupInfo(
     return true;
 
   // If we match exactly, we can return early
-  if (m_name == function_name)
+  if (m_name == function_name.GetCString())
     return true;
 
   // If function_name is mangled, we'll need to demangle it.
@@ -768,7 +769,7 @@ bool Module::LookupInfo::NameMatchesLookupInfo(
 
 void Module::LookupInfo::Prune(SymbolContextList &sc_list,
                                size_t start_idx) const {
-  if (m_match_name_after_lookup && m_name) {
+  if (m_match_name_after_lookup && !m_name.empty()) {
     SymbolContext sc;
     size_t i = start_idx;
     while (i < sc_list.GetSize()) {
@@ -799,7 +800,8 @@ void Module::LookupInfo::Prune(SymbolContextList &sc_list,
       // pull anything out
       ConstString mangled_name(sc.GetFunctionName(Mangled::ePreferMangled));
       ConstString full_name(sc.GetFunctionName());
-      if (mangled_name != m_name && full_name != m_name) {
+      if (mangled_name.GetCString() != m_name &&
+          full_name.GetCString() != m_name) {
         std::unique_ptr<Language::MethodName> cpp_method =
             lang->GetMethodName(full_name);
         if (cpp_method->IsValid()) {
@@ -809,13 +811,14 @@ void Module::LookupInfo::Prune(SymbolContextList &sc_list,
               continue;
             }
           } else {
-            std::string qualified_name;
+            bool qualified_name_matches = false;
             llvm::StringRef anon_prefix("(anonymous namespace)");
             if (cpp_method->GetContext() == anon_prefix)
-              qualified_name = cpp_method->GetBasename().str();
+              qualified_name_matches = m_name == cpp_method->GetBasename();
             else
-              qualified_name = cpp_method->GetScopeQualifiedName();
-            if (qualified_name != m_name.GetCString()) {
+              qualified_name_matches =
+                  m_name == cpp_method->GetScopeQualifiedName();
+            if (!qualified_name_matches) {
               sc_list.RemoveContextAtIndex(i);
               continue;
             }
@@ -840,7 +843,7 @@ void Module::FindFunctions(llvm::ArrayRef<Module::LookupInfo> lookup_infos,
                            options.include_inlines, sc_list);
     if (options.include_symbols)
       if (Symtab *symtab = symbols->GetSymtab())
-        symtab->FindFunctionSymbols(lookup_info.GetLookupName(),
+        symtab->FindFunctionSymbols(ConstString(lookup_info.GetLookupName()),
                                     lookup_info.GetNameTypeMask(), sc_list);
   }
 }

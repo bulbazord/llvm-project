@@ -1077,7 +1077,7 @@ void SymbolFileCTF::FindFunctions(
     bool include_inlines, lldb_private::SymbolContextList &sc_list) {
   ParseFunctions(*m_comp_unit_sp);
 
-  ConstString name = lookup_info.GetLookupName();
+  llvm::StringRef name = lookup_info.GetLookupName();
   for (FunctionSP function_sp : m_functions) {
     if (function_sp && function_sp->GetName() == name) {
       lldb_private::SymbolContext sc;

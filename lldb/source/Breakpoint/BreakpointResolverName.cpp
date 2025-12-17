@@ -198,8 +198,8 @@ StructuredData::ObjectSP BreakpointResolverName::SerializeToStructuredData() {
     StructuredData::ArraySP names_sp(new StructuredData::Array());
     StructuredData::ArraySP name_masks_sp(new StructuredData::Array());
     for (auto lookup : m_lookups) {
-      names_sp->AddItem(std::make_shared<StructuredData::String>(
-          lookup.GetName().GetStringRef()));
+      names_sp->AddItem(
+          std::make_shared<StructuredData::String>(lookup.GetName()));
       name_masks_sp->AddItem(std::make_shared<StructuredData::UnsignedInteger>(
           lookup.GetNameTypeMask()));
     }
@@ -405,19 +405,18 @@ void BreakpointResolverName::GetDescription(Stream *s) {
     // Since there may be many lookups objects for the same name breakpoint (one
     // per language available), unique them by name, and operate on those unique
     // names.
-    std::vector<ConstString> unique_lookups;
+    std::vector<llvm::StringRef> unique_lookups;
     for (auto &lookup : m_lookups) {
       if (!llvm::is_contained(unique_lookups, lookup.GetName()))
         unique_lookups.push_back(lookup.GetName());
     }
     if (unique_lookups.size() == 1)
-      s->Printf("name = '%s'", unique_lookups[0].GetCString());
+      s->Format("name = '{0}'", unique_lookups[0]);
     else {
       size_t num_names = unique_lookups.size();
       s->Printf("names = {");
       for (size_t i = 0; i < num_names; i++) {
-        s->Printf("%s'%s'", (i == 0 ? "" : ", "),
-                  unique_lookups[i].GetCString());
+        s->Format("{0}'{1}'", (i == 0 ? "" : ", "), unique_lookups[i]);
       }
       s->Printf("}");
     }
