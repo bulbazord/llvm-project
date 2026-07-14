@@ -27,6 +27,9 @@ add_lldb_library(lldbPluginSwiftLanguage PLUGIN
   SwiftUnsafeTypes.cpp
   SystemValueTypes.cpp
 
+  LINK_COMPONENTS
+    Support
+
   LINK_LIBS
     lldbCore
     lldbDataFormatters
@@ -37,10 +40,9 @@ add_lldb_library(lldbPluginSwiftLanguage PLUGIN
     lldbPluginTypeSystemSwift
     swiftAST
     swiftClangImporter
-    clangAST
 
-  LINK_COMPONENTS
-    Support
+  CLANG_LIBS
+    clangAST
 )
 if(CMAKE_CXX_COMPILER_ID STREQUAL Clang AND NOT SWIFT_COMPILER_MSVC_LIKE)
   target_compile_options(lldbPluginSwiftLanguage PRIVATE

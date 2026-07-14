@@ -21,6 +21,10 @@ add_lldb_library(lldbPluginExpressionParserSwift PLUGIN
   DEPENDS
   ${tablegen_deps}
 
+  LINK_COMPONENTS
+    Support
+    Core
+
   LINK_LIBS
     lldbCore
     lldbDataFormatters
@@ -41,13 +45,12 @@ add_lldb_library(lldbPluginExpressionParserSwift PLUGIN
     swiftSIL
     swiftSILOptimizer
     swiftSerialization
+
+  CLANG_LIBS
     clangAST
     clangBasic
     clangRewrite
 
-  LINK_COMPONENTS
-    Support
-    Core
   )
 
 if(BOOTSTRAPPING_MODE)

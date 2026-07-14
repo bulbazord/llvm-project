@@ -45,9 +45,4 @@ add_lldb_library(lldbExpression ${PLUGIN_DEPENDENCY_ARG}
     ## BEGIN SWIFT
     ${SWIFT_LIBS}
     ## END SWIFT
-
-  LINK_COMPONENTS
-    Core
-    ExecutionEngine
-    Support
   )
