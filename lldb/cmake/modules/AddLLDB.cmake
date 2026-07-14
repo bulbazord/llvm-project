@@ -41,7 +41,7 @@ function(add_lldb_library name)
   cmake_parse_arguments(PARAM
     "MODULE;SHARED;STATIC;OBJECT;PLUGIN;FRAMEWORK;NO_INTERNAL_DEPENDENCIES;NO_PLUGIN_DEPENDENCIES"
     "INSTALL_PREFIX"
-    "LINK_LIBS;CLANG_LIBS"
+    "LINK_LIBS;CLANG_LIBS;LINK_COMPONENTS;SWIFT_LIBS"
     ${ARGN})
 
   foreach(link_lib ${PARAM_LINK_LIBS})
@@ -52,6 +52,10 @@ function(add_lldb_library name)
 
     if (link_lib MATCHES "^clang")
       message(FATAL_ERROR "Library ${name} links against clang library ${link_lib} via LINK_LIBS but must be added via CLANG_LIBS")
+    endif()
+
+    if (link_lib MATCHES "^swift" OR link_lib MATCHES "^Swift")
+      message(FATAL_ERROR "Library ${name} links against swift library ${link_lib} via LINK_LIBS but must be added via SWIFT_LIBS")
     endif()
 
     get_target_property(_is_llvm_component ${link_lib} LLVM_COMPONENT)
@@ -102,16 +106,25 @@ function(add_lldb_library name)
     set(pass_NO_INSTALL_RPATH NO_INSTALL_RPATH)
   endif()
 
+  set(_link_components ${PARAM_LINK_COMPONENTS})
+  if(LLDB_LINK_SWIFT_COMPILER_DYLIB)
+    set(_link_components)
+  endif()
+
   llvm_add_library(${name} ${libkind}
     ${PARAM_UNPARSED_ARGUMENTS}
     LINK_LIBS ${PARAM_LINK_LIBS}
+    LINK_COMPONENTS ${_link_components}
     ${pass_NO_INSTALL_RPATH}
   )
 
-  if(CLANG_LINK_CLANG_DYLIB)
+  if(LLDB_LINK_SWIFT_COMPILER_DYLIB)
+    target_link_libraries(${name} PRIVATE SwiftCompilerShared)
+  elseif(CLANG_LINK_CLANG_DYLIB)
     target_link_libraries(${name} PRIVATE clang-cpp)
   else()
     target_link_libraries(${name} PRIVATE ${PARAM_CLANG_LIBS})
+    target_link_libraries(${name} PRIVATE ${PARAM_SWIFT_LIBS})
   endif()
 
   # A target cannot be changed to a FRAMEWORK after calling install() because

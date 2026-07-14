@@ -13,9 +13,11 @@ if (NOT LLDB_ENABLE_SWIFT_SUPPORT)
   unset(SWIFT_LIBS)
   set(PLUGIN_DEPENDENCY_ARG NO_PLUGIN_DEPENDENCIES)
   set(LLDB_PLUGIN_DEPENDENCIES)
+  set(SWIFT_LIBS_ARG)
 else()
   set(PLUGIN_DEPENDENCY_ARG)
   set(LLDB_PLUGIN_DEPENDENCIES lldbPluginSwiftLanguageRuntime)
+  set(SWIFT_LIBS_ARG SWIFT_LIBS ${SWIFT_LIBS})
 endif()
 
 add_lldb_library(lldbSymbol ${PLUGIN_DEPENDENCY_ARG}
@@ -66,6 +68,7 @@ add_lldb_library(lldbSymbol ${PLUGIN_DEPENDENCY_ARG}
     clangAST
     clangBasic
     clangFrontend
+  ${SWIFT_LIBS_ARG}
   LINK_LIBS
     lldbCore
     lldbExpression
@@ -74,10 +77,6 @@ add_lldb_library(lldbSymbol ${PLUGIN_DEPENDENCY_ARG}
     lldbUtility
     lldbValueObject
     ${LLDB_PLUGIN_DEPENDENCIES}
-    ## BEGIN SWIFT
-    ${SWIFT_LIBS}
-    ## END SWIFT
-
   )
 if(CMAKE_CXX_COMPILER_ID STREQUAL Clang AND NOT SWIFT_COMPILER_IS_MSVC_LIKE)
   target_compile_options(lldbSymbol PRIVATE -Wno-dollar-in-identifier-extension)
