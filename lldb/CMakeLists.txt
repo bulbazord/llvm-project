@@ -28,6 +28,18 @@ include(GNUInstallDirs)
 option(LLDB_INCLUDE_TESTS "Generate build targets for the LLDB unit tests." ${LLVM_INCLUDE_TESTS})
 
 # BEGIN SWIFT MOD
+# Configure LLDB as normal, but instead of building anything, walk the
+# resulting target graph and emit the LLVM/Clang/Swift target names LLDB
+# needs, then stop. Used by build-script to build only those targets instead
+# of all of LLVM/Clang/Swift. See LLDBDependencyDiscovery.cmake.
+option(LLDB_DEPENDENCY_DISCOVERY_ONLY
+  "Do not build LLDB. Only emit the LLVM/Clang/Swift targets it depends on." OFF)
+if(LLDB_DEPENDENCY_DISCOVERY_ONLY)
+  set(LLDB_INCLUDE_TESTS OFF CACHE BOOL "" FORCE)
+endif()
+# END SWIFT MOD
+
+# BEGIN SWIFT MOD
 set(DEFAULT_LLDB_SWIFT_SUPPORT ON)
 if (LLVM_TARGET_IS_CROSSCOMPILE_HOST)
   set(DEFAULT_LLDB_SWIFT_SUPPORT OFF)
@@ -166,6 +178,15 @@ add_subdirectory(utils/TableGen)
 add_subdirectory(source)
 add_subdirectory(tools)
 add_subdirectory(docs)
+
+# BEGIN SWIFT MOD
+# All of LLDB's own targets now exist; walk them and emit the
+# LLVM/Clang/Swift targets they depend on. See LLDBDependencyDiscovery.cmake.
+if(LLDB_DEPENDENCY_DISCOVERY_ONLY)
+  include(LLDBDependencyDiscovery)
+  lldb_discover_dependencies()
+endif()
+# END SWIFT MOD
 
 check_lldb_plugin_layering()
 
