@@ -1,3 +1,6 @@
+import debugserverCore
+import debugserverHost
+
 struct GDBServerCommand: Subcommand {
   static let helpText = """
     Usage:
@@ -62,6 +65,18 @@ struct GDBServerCommand: Subcommand {
     return fd
   }
 
-  func run() {
+  func run() throws(DebugServerError) {
+    if setsid {
+      do {
+        try Host.isolateSession()
+      } catch {
+        switch error {
+        case .unsupported:
+          throw .failure("--setsid is unsupported on this platform")
+        case .failure(let error_code):
+          throw .failure("Failed to isolate session. setsid returned \(error_code)")
+        }
+      }
+    }
   }
 }
